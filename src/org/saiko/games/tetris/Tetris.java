@@ -1100,16 +1100,16 @@ while(!finished) {
    static public void main(String[] args) {
        try {
         //look for english command line argument
-        boolean english=false;
+        boolean czech=false;
         if(args!=null) {
         	for(int i=0; i<args.length; i++) {
-        		if(args[i].toUpperCase().equals("EN")) {
-        			english=true;
+        		if(args[i].toUpperCase().equals("CZ")) {
+        			czech=true;
         			break;
         		}
         	}
         }
-        String language=(english ? "en" : "cz");
+        String language=(czech ? "cz" : "en");
             	
         String configFile = "org/saiko/games/tetris/tetris_normal.xml";
         Tetris tetris=new Tetris(configFile, language);

@@ -2,7 +2,7 @@ package org.saiko.games.tetris.err;
 
 /**
  * ErrorHandler.java
- * @author  Saiko Du¹an
+ * @author  dusan.saiko@gmail.com
  * @version 0.1
  * created on 12. 09. 2002, 19:14
  * last date modified: 2002-12-11

@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Resource.java
- * @author  Saiko Du�an
+ * @author  dusan.saiko@gmail.com
  * @version 0.1
  * created on 08. 09. 2002, 0:51
  * last date modified: 2002-12-10

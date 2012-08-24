@@ -9,8 +9,7 @@ import javax.swing.ImageIcon;
 import org.saiko.games.tetris.err.ErrorHandler;
 
 /**
- * AJC.java
- * @author  Saiko Du�an
+ * @author  dusan.saiko@gmail.com
  * @version 0.1
  * created on 7. 09. 2002, 22:41
  * last date modified: 2002-12-10

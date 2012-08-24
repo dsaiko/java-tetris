@@ -30,6 +30,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -44,7 +45,7 @@ import org.saiko.games.tetris.err.ErrorHandler;
 
 /**
  * Tetris.java
- * @author  Saiko Dusan
+ * @author dusan.saiko@gmail.com
  * @version 0.1
  * created on 27. 09. 2002, 21:44
  * last date modified: 2004-09-08
@@ -225,7 +226,8 @@ public class Tetris extends JFrame  {
   /**
    * next piece parameters
    */
-  TetrisPiece nextPiece=null;
+  AtomicReference<TetrisPiece> nextPieceReference = new AtomicReference<TetrisPiece>();
+  
   boolean showPreview;
   
   /**
@@ -469,10 +471,9 @@ public class Tetris extends JFrame  {
        class NextPlane extends JLabel {
             public void paint(Graphics g) {
                 super.paint(g);
+                TetrisPiece nextPiece = nextPieceReference.get();
                 if(showPreview && nextPiece!=null) {
-                    synchronized(nextPiece) {
-                        drawPiece(this,g,-1, -1, nextPiece, 0);
-                    }
+                        drawPiece(this,g,-1, -1, nextPieceReference.get(), 0);
                 }
             } //paint
        } //NextPlane
@@ -814,15 +815,11 @@ public class Tetris extends JFrame  {
 while(!finished) {      
       //select random piece and its random rotation
       TetrisPiece piece=null;
-      if(nextPiece==null) {
-         piece= pieces[rnd.nextInt(pieces.length)];
-         nextPiece= pieces[rnd.nextInt(pieces.length)];
-      } else {
-         synchronized(nextPiece) {
-            piece=nextPiece;
-            nextPiece= pieces[rnd.nextInt(pieces.length)];
-         }
-      }
+      TetrisPiece nextPiece = nextPieceReference.get();
+      
+      piece = nextPiece == null ? pieces[rnd.nextInt(pieces.length)] : nextPiece;
+
+      nextPieceReference.set(pieces[rnd.nextInt(pieces.length)]);
       nextPlane.repaint();
         
       int rotation = rnd.nextInt(piece.rotations.length);

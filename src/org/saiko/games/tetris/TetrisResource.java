@@ -3,7 +3,8 @@ package org.saiko.games.tetris;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
@@ -37,10 +38,10 @@ import org.xml.sax.SAXException;
 public class TetrisResource {
     
     /** Hashtable to cache already loaded images */
-    final Hashtable images=new Hashtable();
+    final Map<String, Image> images=new HashMap<String, Image>();
     
     /** Hashtable to cache already used properties */
-    final Hashtable properties=new Hashtable();
+    final Map<String, Properties> properties=new HashMap<String, Properties>();
 
     Properties langProperties;
     

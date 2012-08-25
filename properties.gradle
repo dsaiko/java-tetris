@@ -1,0 +1,20 @@
+project.ext.set("javaVersion", "1.5")
+
+project.ext.set("osVersion", System.getProperty("os.version"))
+project.ext.set("timeStamp", new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date()))
+project.ext.set("javaVmName", System.getProperty("java.vm.name"))
+project.ext.set("javaSpecificationVendor", System.getProperty("java.specification.vendor"))
+project.ext.set("javaVersion", System.getProperty("java.version"))
+
+
+repositories { mavenCentral() }
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+defaultTasks 'clean', 'test', 'jar'
+
+sourceCompatibility=javaVersion
+targetCompatibility=javaVersion
+version=1.01

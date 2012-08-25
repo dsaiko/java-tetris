@@ -30,6 +30,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.Icon;
@@ -54,12 +56,14 @@ import org.saiko.games.tetris.err.ErrorHandler;
  */
 public class Tetris extends JFrame  {
 
-    /**
-     * static inicialization
+	private static final long	serialVersionUID	= 1L;
+
+	/**
+     * static initialization
      */
     static {
         try {
-            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch(Exception e) {
             ErrorHandler.handleError(e);
         }
@@ -71,15 +75,13 @@ public class Tetris extends JFrame  {
   /**
    * flag if the game is running - used when manipulating with action buttons
    */
-  boolean running;
+  final AtomicBoolean isRunning = new AtomicBoolean(false);
     
   /** the type of choosen tetris pieces set */
-  byte CHOOSEN_SET_NORMAL=1;
-  byte CHOOSEN_SET_HYBRID=2;
-  int choosenSet=CHOOSEN_SET_NORMAL;
+  byte CHOOSEN_SET_NORMAL = 1;
+  byte CHOOSEN_SET_HYBRID = 2;
+  int choosenSet = CHOOSEN_SET_NORMAL;
 
-  /** current speed of falling pieces - time of delay in ms **/
-  int currentSpeed;
    
   /**
    * the tetris plane board
@@ -117,10 +119,13 @@ public class Tetris extends JFrame  {
    */
   Object scoreBoardLock=new String();
   
+  /** current speed of falling pieces - time of delay in ms **/
+  final AtomicInteger speed = new AtomicInteger();
+  
   /**
    * the current score counter
    */
-  int currentScore;
+  final AtomicInteger score = new AtomicInteger(0);
   
   /*
    * component for previewing the next piece info
@@ -228,7 +233,7 @@ public class Tetris extends JFrame  {
    */
   AtomicReference<TetrisPiece> nextPieceReference = new AtomicReference<TetrisPiece>();
   
-  boolean showPreview;
+  final AtomicBoolean showPreview = new AtomicBoolean();
   
   /**
    * lock object for synchronization
@@ -236,12 +241,12 @@ public class Tetris extends JFrame  {
   static final Object lock = new String();
   
   //the flag, that the game is finished;
-  boolean finished = false; 
+  final AtomicBoolean isFinished = new AtomicBoolean(false); 
   
   /**
    * global random object
-   */ 
-   final Random rnd = new Random(System.currentTimeMillis());
+  */ 
+  final Random rnd = new Random(System.currentTimeMillis());
     
   /** object with tetris configuration filled from TETRIS.XML **/
   final GameSettings config;
@@ -276,14 +281,14 @@ public class Tetris extends JFrame  {
         });
         
         //set title and main icon
-        this.setTitle(getResource().getString("main_title"));
+        this.setTitle(getResource().getString("game_title"));
         this.setIconImage(getResource().getImage("tetris_icon.gif"));
 
         //get the configuration
         config=GameSettings.getTetrisConfiguration(this, configFile);
 
         //set the current speed according to the configuration
-        currentSpeed=config.initSpeed;
+        speed.set(config.initSpeed);
         
         
         setResizable(false);
@@ -300,7 +305,7 @@ public class Tetris extends JFrame  {
         //pack the parent window to fit the background
         pack();        
 
-        //place the window somewhere programmatically
+        //place the window somewhere programaticaly
         int width=iconBackground.getIconWidth();
         int height=iconBackground.getIconHeight();
         Rectangle screenRect = getGraphicsConfiguration().getBounds();
@@ -308,12 +313,12 @@ public class Tetris extends JFrame  {
         int y = (screenRect.height-height)/2;
         setLocation(x,y);
 
-        showPreview=true;
+        showPreview.set(true);
         
         //preload all needed images
         preloadResources();
         
-        //add components to the backround panel
+        //add components to the background panel
         addComponents(background);
         
         createBoard();
@@ -356,9 +361,8 @@ public class Tetris extends JFrame  {
  }
   
   public synchronized void start() {
-    finished=false;
-
-    currentSpeed=config.initSpeed;
+    isFinished.set(false);
+    speed.set(config.initSpeed);
     
     setScore(0);
     fallingPlane.requestFocus();
@@ -371,7 +375,7 @@ public class Tetris extends JFrame  {
   }
   
   /*
-   * creates the board according to the configuration and initializates it
+   * creates the board according to the configuration and initializes it
    */ 
   void createBoard() {
       synchronized(lock) {
@@ -393,11 +397,11 @@ public class Tetris extends JFrame  {
        isNextPiece.setBorder(null);
        isNextPiece.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
        isNextPiece.setBounds(115,16,ico.getIconWidth(),ico.getIconHeight());
-       isNextPiece.setSelected(showPreview);
+       isNextPiece.setSelected(showPreview.get());
        parent.add(isNextPiece);
        isNextPiece.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent aEvent) {
-               showPreview=isNextPiece.isSelected();
+        	   showPreview.set(isNextPiece.isSelected());
                nextPlane.repaint();
                fallingPlane.requestFocus();
            }
@@ -416,7 +420,9 @@ public class Tetris extends JFrame  {
        
        /** inner class to handle drawing of items on the background */
        class TetrisPlane extends JLabel {
-           TetrisPlane(Icon aIco) {
+    	   private static final long	serialVersionUID	= 1L;
+
+    	   TetrisPlane(Icon aIco) {
                super(aIco);
            }
            
@@ -469,10 +475,12 @@ public class Tetris extends JFrame  {
 
        //nextPlane is component where next piece is shown
        class NextPlane extends JLabel {
-            public void paint(Graphics g) {
+    	   	private static final long	serialVersionUID	= 1L;
+
+			public void paint(Graphics g) {
                 super.paint(g);
                 TetrisPiece nextPiece = nextPieceReference.get();
-                if(showPreview && nextPiece!=null) {
+                if(showPreview.get() && nextPiece!=null) {
                         drawPiece(this,g,-1, -1, nextPieceReference.get(), 0);
                 }
             } //paint
@@ -491,10 +499,12 @@ public class Tetris extends JFrame  {
        parent.add(labelScore);
        
        class ScoreBoard extends JLabel {
-            public void paint(Graphics g) {
+    	   private static final long	serialVersionUID	= 1L;
+
+			public void paint(Graphics g) {
                 super.paint(g);
                   synchronized(scoreBoardLock) {
-                        drawScoreBoard(g, currentScore);
+                        drawScoreBoard(g, score.get());
                   }
             } //paint
        } //NextPlane
@@ -511,10 +521,12 @@ public class Tetris extends JFrame  {
        parent.add(labelSpeed);
 
        class SpeedBoard extends JLabel {
-            public void paint(Graphics g) {
+    	   	private static final long	serialVersionUID	= 1L;
+
+			public void paint(Graphics g) {
                 super.paint(g);
                   synchronized(scoreBoardLock) {
-                        drawScoreBoard(g,1+(config.initSpeed-currentSpeed)/50);
+                        drawScoreBoard(g,1+(config.initSpeed - speed.get())/50);
                   }
             } //paint
        } //NextPlane
@@ -524,7 +536,8 @@ public class Tetris extends JFrame  {
        parent.add(speedBoard);
        
        
-       running=false;
+       isRunning.set(false);
+       
        /**
         * add the game-operating buttons
         */
@@ -543,8 +556,8 @@ public class Tetris extends JFrame  {
                gameOver.disapear();
                randomizeTetrisPlane();
                synchronized(lock) {
-                    currentScore=0;
-                    currentSpeed=config.initSpeed;
+                    score.set(0);
+                    speed.set(config.initSpeed);
                }
                scoreBoard.repaint();
                speedBoard.repaint();
@@ -564,15 +577,16 @@ public class Tetris extends JFrame  {
        b2.setBounds(105,330,ico.getIconWidth(),ico.getIconHeight());
        b2.addActionListener(new ActionListener() {
            public void actionPerformed(ActionEvent aEvent) {
-               running=!running;
-               if(!running) {
-                   synchronized(lock) {
-                       finished=true;
-                   }
-                   b1.setEnabled(true);
-               } else {
-                   b1.setEnabled(false);
-                   start();
+               synchronized(lock) {
+            	   boolean b = isRunning.get(); 
+            	   isRunning.compareAndSet(b, !b); 
+	               if(b) {
+	                   isFinished.set(true);
+	                   b1.setEnabled(true);
+	               } else {
+	                   b1.setEnabled(false);
+	                   start();
+	               }
                }
                fallingPlane.requestFocus();
            }
@@ -588,7 +602,7 @@ public class Tetris extends JFrame  {
        gameOver.setText(getResource().getString("game_over"));
 
        isNextPiece.setToolTipText(getResource().getString("show_preview"));
-       String showPreview=getResource().getString("show_pieces");
+       String showPreview = getResource().getString("show_pieces");
        labelNextPiece.setText(showPreview);
        FontMetrics fm=labelNextPiece.getFontMetrics(labelNextPiece.getFont());
        isNextPiece.setLocation(20+fm.stringWidth(showPreview)+fm.charWidth('w'),16);
@@ -647,23 +661,22 @@ public class Tetris extends JFrame  {
    /**
     * sets the score and repaints the scoreboard
     */
-   void setScore(int aScore) {
+   void setScore(int newScore) {
        int oldScore;
        boolean speedRepaint=false;
        
        //the breakpoints where speed changes
-       int speedScoreBreakpoints[] = new int[] {1000,3000,7000,15000,31000};
+       int speedScoreBreakpoints[] = new int[] {500, 1000, 2000, 3000, 4500};
        
        synchronized(scoreBoardLock) {
-           oldScore=currentScore;
-           currentScore=aScore;
+           oldScore = score.getAndSet(newScore);
            
            //if there is change in 1000 than change speed
            for(int i=0; i<speedScoreBreakpoints.length;i++) {
                //this way we handle the case that for example from 0 points
                //player makes 5000 points at once
-               if(oldScore<speedScoreBreakpoints[i] && currentScore>=speedScoreBreakpoints[i]) {
-                    currentSpeed=Math.max(50,currentSpeed-50);
+               if(oldScore < speedScoreBreakpoints[i] && newScore >= speedScoreBreakpoints[i]) {
+                    speed.set(Math.max(50, speed.get() - 50));
                     speedRepaint=true;
                }
            }
@@ -677,14 +690,9 @@ public class Tetris extends JFrame  {
    /**
     * add points to score
     */
-   void addScore(int aIncrement) {
-       int newScore;
-       synchronized(scoreBoardLock) {
-          newScore=currentScore+aIncrement;
-       }
-       
+   void addScore(int increment) {
        //call setScore to handle some common actions when setting the score
-       setScore(newScore);
+       setScore(score.get() + increment);
    }
    
    /**
@@ -765,7 +773,7 @@ public class Tetris extends JFrame  {
        for(int r=0; r<rotation.height; r++) {
            //for columns
            for(int c=0; c<rotation.width; c++) {
-               char flag = rotation.map.charAt(dataPos);
+               char flag = rotation.map[dataPos];
                if(flag=='1') {
                    g.drawImage(blockImg,x,y,null);
                }
@@ -781,10 +789,10 @@ public class Tetris extends JFrame  {
  
   //the game by itself
   public void game() {
-      currentSpeed=config.initSpeed;
+      speed.set(config.initSpeed);
       speedBoard.repaint();
 
-      // get choosen set
+      // get chosen set
       TetrisPiece[] pieces = (choosenSet==CHOOSEN_SET_NORMAL ? config.piecesNormal : config.piecesAll);
 
       class MergingThread extends Thread {
@@ -812,7 +820,7 @@ public class Tetris extends JFrame  {
           }
       };
  
-while(!finished) {      
+while(! isFinished.get()) {      
       //select random piece and its random rotation
       TetrisPiece piece=null;
       TetrisPiece nextPiece = nextPieceReference.get();
@@ -836,14 +844,14 @@ while(!finished) {
           fallingPieceCenterY=centerY;
       }
 
-      /* zmena ZM */
-      addScore((config.initSpeed - currentSpeed) / 50 + 1);
+      addScore((config.initSpeed - speed.get()) / 50 + 1);
 
       boolean falling=true;
-      if(!canExists(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX,fallingPieceCenterY)) {
-          finished=true;
-          running=false;
+      if(!canBePlaced(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX,fallingPieceCenterY)) {
+    	  isFinished.set(true);
+    	  
           synchronized(lock) {
+              isRunning.set(false);
               fallingPiece=null;
           }
           b1.setEnabled(false);
@@ -851,10 +859,10 @@ while(!finished) {
           gameOver.gameOver();
           b1.setEnabled(true);
       }
-      while(falling && !finished) {
+      while(falling && !isFinished.get()) {
           fallingPlane.repaint();
           try {
-            Thread.sleep(currentSpeed);
+            Thread.sleep(speed.get());
           } catch(Throwable e) {}
           synchronized(lock) {
               falling=moveDown();
@@ -863,11 +871,11 @@ while(!finished) {
 
       //the piece has fall on the ground, merge it with board
       //start the merging process
-      //prepare merging theread
+      //prepare merging thread
       //the merging pieces with background is OK,
       //but if the line is going to be deleted, 
       //it involves some more animation
-      if(!finished) {
+      if(!isFinished.get()) {
           MergingThread mt;
           synchronized(lock) {
               mt=new MergingThread(fallingPiece,fallingPieceRotation,fallingPieceCenterX,fallingPieceCenterY);
@@ -917,8 +925,7 @@ while(!finished) {
                                    board[x][line]=null;
                                }
                                tetrisPlane.repaint();
-				/* Zmena ZM */	
-                               addScore(((config.initSpeed - currentSpeed + 50) / 50) * 2 * (lines + 1));
+                               addScore(((config.initSpeed - speed.get() + 50) / 50) * 2 * (lines + 1));
                                try { Thread.sleep(15); } catch(Throwable e) {}
                            }
                            break;
@@ -928,8 +935,7 @@ while(!finished) {
                                    board[x][line]=null;
                                }
                                tetrisPlane.repaint();
-				/* Zmena ZM */	
-                               addScore(((config.initSpeed - currentSpeed + 50) / 50) * 2 * (lines + 1));
+                               addScore(((config.initSpeed - speed.get() + 50) / 50) * 2 * (lines + 1));
                                try { Thread.sleep(15); } catch(Throwable e) {}
                            }
                            break;
@@ -964,7 +970,7 @@ while(!finished) {
       for(int r=0; r<rotation.height; r++) {
          //for columns
          for(int c=0; c<rotation.width; c++) {
-            char flag = rotation.map.charAt(dataPos);
+            char flag = rotation.map[dataPos];
             if(flag=='1') {
                 board[x][y]=img;
             }
@@ -989,7 +995,7 @@ while(!finished) {
               //is bottom OK ?
               if(fallingPieceCenterY+(fallingPiece.rotations[r].height-fallingPiece.rotations[r].centerY)<=config.planeHeight) {
                   //is there placed anything ?
-                  if(canExists(fallingPiece.rotations[r],fallingPieceCenterX,fallingPieceCenterY)) {
+                  if(canBePlaced(fallingPiece.rotations[r],fallingPieceCenterX,fallingPieceCenterY)) {
                       fallingPieceRotation=r;
                       return true;
                   }
@@ -1004,7 +1010,7 @@ while(!finished) {
    */
   boolean moveLeft() {
       if(fallingPieceCenterX-fallingPiece.rotations[fallingPieceRotation].centerX>0) {
-          if(canExists(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX-1,fallingPieceCenterY)) {
+          if(canBePlaced(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX-1,fallingPieceCenterY)) {
               fallingPieceCenterX--;
               return true;
           }
@@ -1017,7 +1023,7 @@ while(!finished) {
    */
   boolean moveRight() {
       if(fallingPieceCenterX+(fallingPiece.rotations[fallingPieceRotation].width-fallingPiece.rotations[fallingPieceRotation].centerX)<config.planeWidth) {
-          if(canExists(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX+1,fallingPieceCenterY)) {
+          if(canBePlaced(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX+1,fallingPieceCenterY)) {
               fallingPieceCenterX++;
               return true;
           }
@@ -1031,7 +1037,7 @@ while(!finished) {
   boolean moveDown() {
       if(fallingPiece==null) return false;
       if(fallingPieceCenterY+(fallingPiece.rotations[fallingPieceRotation].height-fallingPiece.rotations[fallingPieceRotation].centerY)<config.planeHeight) {
-          if(canExists(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX,fallingPieceCenterY+1)) {
+          if(canBePlaced(fallingPiece.rotations[fallingPieceRotation],fallingPieceCenterX,fallingPieceCenterY+1)) {
               fallingPieceCenterY++;
               return true;
           }
@@ -1043,23 +1049,23 @@ while(!finished) {
    * checks, if the moving piece can lie on the specific position - if there is not
    * another piece already
    */
-  boolean canExists(TetrisPieceRotation aRotation, int aX, int aY) {
+  boolean canBePlaced(TetrisPieceRotation rotation, int aX, int aY) {
       if(board==null) return false;
       
-      int xStart=(aX-aRotation.centerX);
+      int xStart=(aX-rotation.centerX);
       int x=xStart;
-      int y=(aY-aRotation.centerY);
+      int y=(aY-rotation.centerY);
       int dataPos=0;
 
       //for rows
-      for(int r=0; r<aRotation.height; r++) {
+      for(int r=0; r<rotation.height; r++) {
          //for columns
-         for(int c=0; c<aRotation.width; c++) {
+         for(int c=0; c<rotation.width; c++) {
             //I do not check for top boundary when rotating the piece
-            //it may happend, that the positions of some part gets below
+            //it may happen, that the positions of some part gets below
             //zero, but it does not matter and it is OK to ignore it.
             if(x>=0 && y>=0) {
-                char flag = aRotation.map.charAt(dataPos);
+                char flag = rotation.map[dataPos];
                 if(flag=='1') {
                     if(board[x][y]!=null) return false;
                 }
@@ -1073,7 +1079,7 @@ while(!finished) {
       return true;
   }
   
-  /** handlerfor key events when palying **/
+  /** handler for key events when playing **/
   void gameKeyPressed(KeyEvent e) {
       boolean change=false;
       synchronized(lock) {
@@ -1096,22 +1102,19 @@ while(!finished) {
     */
    static public void main(String[] args) {
        try {
-        //look for english command line argument
+        //look for language command line argument
         boolean czech=false;
-        if(args!=null) {
-        	for(int i=0; i<args.length; i++) {
-        		if(args[i].toUpperCase().equals("CZ")) {
+        if(args!=null) 
+        	for(String arg : args) 
+        		if("CZ".equalsIgnoreCase(arg)) 
         			czech=true;
-        			break;
-        		}
-        	}
-        }
+
         String language=(czech ? "cz" : "en");
             	
         String configFile = "org/saiko/games/tetris/tetris_normal.xml";
         Tetris tetris=new Tetris(configFile, language);
            
-        tetris.show();
+        tetris.setVisible(true);
        } catch(Throwable e) {
            ErrorHandler.handleError(e);
        }

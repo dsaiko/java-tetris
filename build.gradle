@@ -1,0 +1,35 @@
+// SCALAUTILITIES-GAMES
+// (c) 2012 hijex.com
+
+apply from: "./properties.gradle"
+
+dependencies {
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+            srcDir 'res'
+        }
+    }
+}
+
+jar {
+    manifest {
+            attributes(
+        	"Implementation-Title": "Java Tetris", 
+       		"Implementation-Version": "v$version", 
+        	"Build-Version": "v$version",
+        	"Build-Date": timeStamp,
+        	"Build-VM-Name": javaVmName,
+        	"Build-Java-Vendor": javaSpecificationVendor,
+        	"Build-Java-Version": javaVersion,
+        	"Build-OS-Version": osVersion,
+        	"Main-Class": "org.saiko.games.tetris.Tetris"
+            )
+    }    
+}
+

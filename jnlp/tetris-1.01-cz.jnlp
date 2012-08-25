@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<jnlp spec="0.2 1.0"
+      codebase="http://java-tetris.googlecode.com/files/"
+      href="tetris-1.01-cz.jnlp">
+   <information> 
+      <title>Tetris game</title> 
+      <vendor>Dusan Saiko</vendor>
+      <homepage href="http://code.google.com/p/java-tetris/"/>
+      <description>Tetris game in Java Swing</description>
+      <offline-allowed/> 
+   </information> 
+   <resources>
+      <j2se version="1.5.0_01+" href="http://java.sun.com/products/autodl/j2se" />
+      <jar href="java-tetris-1.01.jar" main="true" download="eager"/>
+   </resources>
+   <application-desc main-class="org.saiko.games.tetris.Tetris">
+    <argument>cz</argument>
+   </application-desc> 
+</jnlp> 

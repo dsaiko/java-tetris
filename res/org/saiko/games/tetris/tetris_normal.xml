@@ -4,7 +4,7 @@
 
 <tetris>
 	<config>
-		<tetris_image>org/saiko/games/tetris/res/img/tetris.jpg</tetris_image>
+		<tetris_image>org/saiko/games/tetris/res/img/tetris.png</tetris_image>
 		<digit_path>org/saiko/games/tetris/res/img/digits/</digit_path>
 		<digit_prefix>digit_</digit_prefix>
 		<digit_postfix>.gif</digit_postfix>

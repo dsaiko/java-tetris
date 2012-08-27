@@ -282,7 +282,7 @@ public class Tetris extends JFrame  {
         
         //set title and main icon
         this.setTitle(getResource().getString("game_title"));
-        this.setIconImage(getResource().getImage("tetris_icon.gif"));
+        this.setIconImage(getResource().getImage("tetris-icon.png"));
 
         //get the configuration
         config=GameSettings.getTetrisConfiguration(this, configFile);
@@ -296,7 +296,6 @@ public class Tetris extends JFrame  {
         //put the background there as iconed label
         Icon iconBackground=getResource().getImageIcon(config.tetrisImage);
         JLabel background = new JLabel(iconBackground);
-        background.setBounds(0,0,600,480);
         
         background.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         getContentPane().setBackground(null);

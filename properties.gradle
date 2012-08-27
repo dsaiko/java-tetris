@@ -17,4 +17,4 @@ defaultTasks 'clean', 'test', 'jar'
 
 sourceCompatibility=javaVersion
 targetCompatibility=javaVersion
-version=1.01
+version=1.02

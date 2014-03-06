@@ -24,3 +24,5 @@ Game configuration
 - configuration file is placed inside jar at org/saiko/games/tetris/
 
 Game is in English (default) and Czech (česky).
+
+(c) 2005 Dusan Saiko

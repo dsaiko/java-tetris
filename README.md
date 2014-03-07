@@ -3,6 +3,8 @@ java-tetris
 
 Simple and configurable (in source) Java tetris game
 
+![](http://www.saiko.cz/java-tetris.png)
+
 Java Tetris game which can be quite easily customized using XML files in the source code. 
 You can create your own settings, background, speed, pieces, etc.
 
